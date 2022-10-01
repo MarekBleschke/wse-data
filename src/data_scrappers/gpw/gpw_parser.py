@@ -7,8 +7,10 @@ from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup, NavigableString, Tag
 from pydantic import ValidationError, BaseModel
 
-from src.data_scrappers.gpw.company_model import CompanyModel
-from src.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
+from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
+from src.data_scrappers.gpw.failed_parsing_element_model import (
+    FailedParsingElementModel,
+)
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
 
 logger = logging.getLogger(__name__)
@@ -64,6 +66,11 @@ class _ReportData(BaseModel):
 
 
 class GPWParser:
+    market: MarketEnum
+
+    def __init__(self, market: MarketEnum):
+        self.market = market
+
     def parse_companies_page(self, response_page: bytes) -> Iterator[Union[CompanyModel, FailedParsingElementModel]]:
         soup = BeautifulSoup(response_page, "html.parser", from_encoding="utf-8")
 
@@ -77,6 +84,7 @@ class GPWParser:
                     gpw_id=self._parse_company_id(row),
                     name=self._parse_company_name(row),
                     ticker=self._parse_company_ticker(row),
+                    market=self.market,
                 )
             except (GPWParserException, ValidationError) as exc:
                 logger.exception(exc)

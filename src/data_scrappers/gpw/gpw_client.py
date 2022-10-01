@@ -1,11 +1,11 @@
 import logging
 from datetime import date
-from enum import Enum, auto
 from typing import Iterator, Optional, Union
 
 import httpx
 from httpx import Timeout
 
+from src.data_scrappers.gpw.company_model import MarketEnum
 from src.data_scrappers.gpw.gpw_config import GPWConfig
 from src.data_scrappers.gpw.new_connect_config import NewConnectConfig
 
@@ -14,11 +14,6 @@ logger = logging.getLogger(__name__)
 
 class UnmappedEnumException(Exception):
     pass
-
-
-class MarketEnum(Enum):
-    GPW = auto()
-    NEW_CONNECT = auto()
 
 
 class GPWClient:

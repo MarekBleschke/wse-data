@@ -3,9 +3,11 @@ from datetime import date
 from itertools import chain
 from typing import Iterator, Optional, Union
 
-from src.data_scrappers.gpw.company_model import CompanyModel
-from src.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
-from src.data_scrappers.gpw.gpw_client import GPWClient, MarketEnum
+from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
+from src.data_scrappers.gpw.failed_parsing_element_model import (
+    FailedParsingElementModel,
+)
+from src.data_scrappers.gpw.gpw_client import GPWClient
 from src.data_scrappers.gpw.gpw_parser import GPWParser, EmptyPageException
 from src.data_scrappers.gpw.report_model import ReportModel
 from src.data_scrappers.utils import date_range
@@ -29,21 +31,26 @@ class WSE:
     def __init__(self) -> None:
         self._gpw_client = GPWClient(market=MarketEnum.GPW)
         self._new_connect_client = GPWClient(market=MarketEnum.NEW_CONNECT)
-        self._gpw_parser = GPWParser()
+        self._gpw_parser = GPWParser(market=MarketEnum.GPW)
+        self._new_connect_parser = GPWParser(market=MarketEnum.NEW_CONNECT)
 
     def get_companies(self) -> Iterator[Union[CompanyModel, FailedParsingElementModel]]:
-        companies_generators = chain(
-            self._gpw_client.companies_list(),
-            self._new_connect_client.companies_list(),
-        )
-        for response_page in companies_generators:
+        for response_page in self._gpw_client.companies_list():
             try:
                 yield from self._gpw_parser.parse_companies_page(response_page.content)
             except EmptyPageException:
                 break
+        for response_page in self._new_connect_client.companies_list():
+            try:
+                yield from self._new_connect_parser.parse_companies_page(response_page.content)
+            except EmptyPageException:
+                break
 
     def get_reports(
-        self, search: str = "", date_from: Optional[date] = None, date_to: Optional[date] = None
+        self,
+        search: str = "",
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
     ) -> Iterator[Union[ReportModel, FailedParsingElementModel]]:
         if any([date_from, date_to]) and not all([date_from, date_to]):
             raise DateRangeException(

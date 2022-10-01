@@ -12,7 +12,7 @@ from tests.data.gpw_responses import (
     REPORTS_EMPTY_PAGE,
     REPORTS_PAGE_MALFORMED,
 )
-from src.data_scrappers.gpw.company_model import CompanyModel
+from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.wse import WSE, DateRangeException
 
 
@@ -56,6 +56,7 @@ def test_get_companies_returns_model_object(wse, respx_mock):
         gpw_id="PLROPCE00017",
         name="ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA",
         ticker="RPC",
+        market=MarketEnum.GPW,
     )
 
 

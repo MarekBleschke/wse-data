@@ -4,10 +4,12 @@ from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
-from src.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
+from src.data_scrappers.gpw.failed_parsing_element_model import (
+    FailedParsingElementModel,
+)
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
 from tests.data import gpw_responses
-from src.data_scrappers.gpw.company_model import CompanyModel
+from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.data_scrappers.gpw.gpw_parser import (
     GPWParser,
     EmptyPageException,
@@ -23,7 +25,7 @@ from src.data_scrappers.gpw.gpw_parser import (
 
 @pytest.fixture
 def gpw_parser():
-    return GPWParser()
+    return GPWParser(market=MarketEnum.GPW)
 
 
 @pytest.fixture
@@ -44,31 +46,56 @@ def test_parse_companies_page_parses_page_properly(gpw_parser):
             gpw_id="PLROPCE00017",
             name="ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA",
             ticker="RPC",
+            market=MarketEnum.GPW,
         ),
         CompanyModel(
             gpw_id="PLZPCOT00018",
             name="ZAKŁADY PRZEMYSŁU CUKIERNICZEGO OTMUCHÓW SPÓŁKA AKCYJNA",
             ticker="OTM",
+            market=MarketEnum.GPW,
         ),
         CompanyModel(
             gpw_id="PLELZAB00010",
             name="ZAKŁADY URZĄDZEŃ KOMPUTEROWYCH ELZAB SPÓŁKA AKCYJNA",
             ticker="ELZ",
+            market=MarketEnum.GPW,
         ),
         CompanyModel(
             gpw_id="PLSTPRK00019",
             name="ZAKŁADY URZĄDZEŃ KOTŁOWYCH STĄPORKÓW SPÓŁKA AKCYJNA",
             ticker="ZUK",
+            market=MarketEnum.GPW,
         ),
-        CompanyModel(gpw_id="PLZAMET00010", name="ZAMET SPÓŁKA AKCYJNA", ticker="ZMT"),
-        CompanyModel(gpw_id="PLZEPAK00012", name="ZE PAK SPÓŁKA AKCYJNA", ticker="ZEP"),
+        CompanyModel(
+            gpw_id="PLZAMET00010",
+            name="ZAMET SPÓŁKA AKCYJNA",
+            ticker="ZMT",
+            market=MarketEnum.GPW,
+        ),
+        CompanyModel(
+            gpw_id="PLZEPAK00012",
+            name="ZE PAK SPÓŁKA AKCYJNA",
+            ticker="ZEP",
+            market=MarketEnum.GPW,
+        ),
         CompanyModel(
             gpw_id="PLKGNRC00015",
             name="ZESPÓŁ ELEKTROCIEPŁOWNI WROCŁAWSKICH KOGENERACJA SPÓŁKA AKCYJNA",
             ticker="KGN",
+            market=MarketEnum.GPW,
         ),
-        CompanyModel(gpw_id="PLZPUE000012", name="ZPUE SPÓŁKA AKCYJNA", ticker="PUE"),
-        CompanyModel(gpw_id="PLZUE0000015", name="ZUE SPÓŁKA AKCYJNA", ticker="ZUE"),
+        CompanyModel(
+            gpw_id="PLZPUE000012",
+            name="ZPUE SPÓŁKA AKCYJNA",
+            ticker="PUE",
+            market=MarketEnum.GPW,
+        ),
+        CompanyModel(
+            gpw_id="PLZUE0000015",
+            name="ZUE SPÓŁKA AKCYJNA",
+            ticker="ZUE",
+            market=MarketEnum.GPW,
+        ),
     ]
 
 
@@ -165,29 +192,41 @@ def test_parse_company_ticker_raises_exception_when_no_company_ticker(gpw_parser
         (
             "28-09-2021 19:16:14 | Bieżący | ESPI | 12/2021",
             _ReportData(
-                datetime=datetime(2021, 9, 28, 19, 16, 14), category=ReportCategory.ESPI, type=ReportType.CURRENT
+                datetime=datetime(2021, 9, 28, 19, 16, 14),
+                category=ReportCategory.ESPI,
+                type=ReportType.CURRENT,
             ),
         ),
         (
             "30-04-2021 20:58:39 | Roczny | ESPI",
-            _ReportData(datetime=datetime(2021, 4, 30, 20, 58, 39), category=ReportCategory.ESPI, type=ReportType.YEAR),
+            _ReportData(
+                datetime=datetime(2021, 4, 30, 20, 58, 39),
+                category=ReportCategory.ESPI,
+                type=ReportType.YEAR,
+            ),
         ),
         (
             "24-09-2021 17:38:49 | ESPI | 55/2021",
             _ReportData(
-                datetime=datetime(2021, 9, 24, 17, 38, 49), category=ReportCategory.ESPI, type=ReportType.OTHER
+                datetime=datetime(2021, 9, 24, 17, 38, 49),
+                category=ReportCategory.ESPI,
+                type=ReportType.OTHER,
             ),
         ),
         (
             "24-03-2022 21:49:42 | Półroczny | ESPI | /2021",
             _ReportData(
-                datetime=datetime(2022, 3, 24, 21, 49, 42), category=ReportCategory.ESPI, type=ReportType.HALF_YEAR
+                datetime=datetime(2022, 3, 24, 21, 49, 42),
+                category=ReportCategory.ESPI,
+                type=ReportType.HALF_YEAR,
             ),
         ),
         (
             "24-02-2021 16:16:47 | Kwartalny | EBI | 1/2021",
             _ReportData(
-                datetime=datetime(2021, 2, 24, 16, 16, 47), category=ReportCategory.EBI, type=ReportType.QUARTER
+                datetime=datetime(2021, 2, 24, 16, 16, 47),
+                category=ReportCategory.EBI,
+                type=ReportType.QUARTER,
             ),
         ),
     ],

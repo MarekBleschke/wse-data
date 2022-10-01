@@ -7,7 +7,7 @@ from datetime import datetime
 from rich import print
 
 from src.cli import app, WSE
-from src.data_scrappers.gpw.company_model import CompanyModel
+from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
 
 runner = CliRunner()
@@ -16,8 +16,8 @@ runner = CliRunner()
 def test_companies_list_prints_companies():
     # given
     get_companies_return_value = [
-        CompanyModel(gpw_id="1", name="11 BIT", ticker="11B"),
-        CompanyModel(gpw_id="2", name="Ambra", ticker="AMB"),
+        CompanyModel(gpw_id="1", name="11 BIT", ticker="11B", market=MarketEnum.GPW),
+        CompanyModel(gpw_id="2", name="Ambra", ticker="AMB", market=MarketEnum.GPW),
     ]
 
     # when
