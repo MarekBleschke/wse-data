@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.9", "3.10" ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Lint
+        run: poetry run make lint/flake8 lint/black
+      - name: Test
+        run: poetry run make test
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+        with:
+          python-version: "3.10"
+      - name: Check mypy
+        run: poetry run make lint/mypy
