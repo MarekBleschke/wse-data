@@ -53,7 +53,7 @@ def test_get_companies_returns_model_object(wse, respx_mock):
 
     # then
     assert company == CompanyModel(
-        gpw_id="PLROPCE00017",
+        isin="PLROPCE00017",
         name="ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA",
         ticker="RPC",
         market=MarketEnum.GPW,

@@ -16,8 +16,8 @@ runner = CliRunner()
 def test_companies_list_prints_companies():
     # given
     get_companies_return_value = [
-        CompanyModel(gpw_id="1", name="11 BIT", ticker="11B", market=MarketEnum.GPW),
-        CompanyModel(gpw_id="2", name="Ambra", ticker="AMB", market=MarketEnum.GPW),
+        CompanyModel(isin="1", name="11 BIT", ticker="11B", market=MarketEnum.GPW),
+        CompanyModel(isin="2", name="Ambra", ticker="AMB", market=MarketEnum.GPW),
     ]
 
     # when

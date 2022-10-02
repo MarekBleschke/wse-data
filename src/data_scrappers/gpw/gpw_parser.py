@@ -81,7 +81,7 @@ class GPWParser:
         for row in soup.find_all("tr"):
             try:
                 yield CompanyModel(
-                    gpw_id=self._parse_company_id(row),
+                    isin=self._parse_company_id(row),
                     name=self._parse_company_name(row),
                     ticker=self._parse_company_ticker(row),
                     market=self.market,

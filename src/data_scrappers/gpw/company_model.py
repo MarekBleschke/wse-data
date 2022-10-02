@@ -9,7 +9,7 @@ class MarketEnum(Enum):
 
 
 class CompanyModel(BaseModel):
-    gpw_id: str
-    name: str
-    ticker: str
-    market: MarketEnum
+    isin: str  # International Securities Identification Number
+    name: str  # Company name
+    ticker: str  # Stock symbol
+    market: MarketEnum  # Stock market
