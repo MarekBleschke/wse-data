@@ -3,14 +3,19 @@ from datetime import datetime, date
 import httpx
 import pytest
 
+from src.data_scrappers.gpw.failed_parsing_element_model import (
+    FailedParsingElementModel,
+)
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
 from tests.data.gpw_responses import (
-    COMPANIES_LIST_PAGE,
+    GPW_COMPANIES_LIST_PAGE,
     COMPANIES_LIST_EMPTY_PAGE,
-    COMPANIES_LIST_PAGE_MALFORMED,
+    GPW_COMPANIES_LIST_PAGE_MALFORMED,
     REPORTS_PAGE,
     REPORTS_EMPTY_PAGE,
     REPORTS_PAGE_MALFORMED,
+    NEW_CONNECT_COMPANIES_LIST_PAGE,
+    NEW_CONNECT_COMPANIES_LIST_PAGE_MALFORMED,
 )
 from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.wse import WSE, DateRangeException
@@ -23,28 +28,26 @@ def wse():
 
 def test_get_companies_returns_proper_number_of_companies(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
-        httpx.Response(200, content=COMPANIES_LIST_PAGE),
-        httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE),
-    ]
-    respx_mock.post(wse._new_connect_client.config.companies_url).side_effect = [
-        httpx.Response(200, content=COMPANIES_LIST_PAGE),
-        httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE),
-    ]
+    respx_mock.post(wse._gpw_client.config.companies_requests[0][0]).mock(
+        return_value=httpx.Response(200, content=GPW_COMPANIES_LIST_PAGE)
+    )
+    respx_mock.post(wse._new_connect_client.config.companies_requests[0][0]).mock(
+        return_value=httpx.Response(200, content=NEW_CONNECT_COMPANIES_LIST_PAGE)
+    )
 
     # when
     companies = list(wse.get_companies())
 
     # then
-    assert len(companies) == 18
+    assert len(companies) == 80
 
 
 def test_get_companies_returns_model_object(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).mock(
-        return_value=httpx.Response(200, content=COMPANIES_LIST_PAGE)
+    respx_mock.post(wse._gpw_client.config.companies_requests[0][0]).mock(
+        return_value=httpx.Response(200, content=GPW_COMPANIES_LIST_PAGE)
     )
-    respx_mock.post(wse._new_connect_client.config.companies_url).mock(
+    respx_mock.post(wse._new_connect_client.config.companies_requests[0][0]).mock(
         return_value=httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE)
     )
 
@@ -53,48 +56,29 @@ def test_get_companies_returns_model_object(wse, respx_mock):
 
     # then
     assert company == CompanyModel(
-        isin="PLROPCE00017",
-        name="ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA",
-        ticker="RPC",
+        isin="PLNFI0600010",
+        name="06MAGNA",
+        ticker="06N",
         market=MarketEnum.GPW,
     )
 
 
 def test_get_companies_continues_after_known_parsing_exception(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
-        httpx.Response(200, content=COMPANIES_LIST_PAGE_MALFORMED),
-        httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE),
-    ]
-    respx_mock.post(wse._new_connect_client.config.companies_url).mock(
-        return_value=httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE)
+    respx_mock.post(wse._gpw_client.config.companies_requests[0][0]).mock(
+        httpx.Response(200, content=GPW_COMPANIES_LIST_PAGE_MALFORMED)
+    )
+    respx_mock.post(wse._new_connect_client.config.companies_requests[0][0]).mock(
+        return_value=httpx.Response(200, content=NEW_CONNECT_COMPANIES_LIST_PAGE_MALFORMED)
     )
 
     # when
-    companies = list(wse.get_companies())
+    all_records = list(wse.get_companies())
+    failed_records = [record for record in all_records if isinstance(record, FailedParsingElementModel)]
 
     # then
-    assert len(companies) == 9
-
-
-def test_get_companies_break_after_reaching_empty_page(wse, respx_mock):
-    # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
-        httpx.Response(200, content=COMPANIES_LIST_PAGE * 10),
-        # Putting empty page in the middle of responses should prevent making more requests.
-        httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE),
-        httpx.Response(200, content=COMPANIES_LIST_PAGE * 10),
-    ]
-    respx_mock.post(wse._new_connect_client.config.companies_url).mock(
-        return_value=httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE)
-    )
-
-    # when
-    list(wse.get_companies())
-
-    # then
-    #  two requests to WSE od one to NewConnect
-    assert respx_mock.calls.call_count == 3
+    assert len(all_records) == 80
+    assert len(failed_records) == 4
 
 
 def test_get_reports_returns_proper_number_of_reports(wse, respx_mock):
@@ -152,7 +136,7 @@ def test_get_reports_continues_after_known_parsing_exception(wse, respx_mock):
 
 def test_get_reports_break_after_reaching_empty_page(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
+    respx_mock.post(wse._gpw_client.config.reports_url).side_effect = [
         httpx.Response(200, content=REPORTS_PAGE),
         # Putting empty page in the middle of responses should prevent making more requests.
         httpx.Response(200, content=REPORTS_EMPTY_PAGE),
@@ -172,7 +156,7 @@ def test_get_reports_break_after_reaching_empty_page(wse, respx_mock):
 
 def test_get_reports_date_range_query_params(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
+    respx_mock.post(wse._gpw_client.config.reports_url).side_effect = [
         httpx.Response(200, content=REPORTS_PAGE),
         httpx.Response(200, content=REPORTS_EMPTY_PAGE),
         httpx.Response(200, content=REPORTS_PAGE),
@@ -193,9 +177,7 @@ def test_get_reports_date_range_query_params(wse, respx_mock):
 
 def test_get_reports_raises_when_only_single_date_given(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
-        httpx.Response(200, content=REPORTS_EMPTY_PAGE)
-    ]
+    respx_mock.post(wse._gpw_client.config.reports_url).side_effect = [httpx.Response(200, content=REPORTS_EMPTY_PAGE)]
 
     # then
     with pytest.raises(DateRangeException):
@@ -206,7 +188,7 @@ def test_get_reports_raises_when_only_single_date_given(wse, respx_mock):
 
 def test_get_reports_search_query_param(wse, respx_mock):
     # given
-    respx_mock.post(wse._gpw_client.config.companies_url).side_effect = [
+    respx_mock.post(wse._gpw_client.config.reports_url).side_effect = [
         httpx.Response(200, content=REPORTS_PAGE),
         httpx.Response(200, content=REPORTS_EMPTY_PAGE),
     ]

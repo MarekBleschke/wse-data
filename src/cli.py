@@ -6,7 +6,9 @@ import typer
 
 from rich import print
 
-from src.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
+from src.data_scrappers.gpw.failed_parsing_element_model import (
+    FailedParsingElementModel,
+)
 from src.wse import WSE
 
 

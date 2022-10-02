@@ -73,12 +73,7 @@ class GPWParser:
 
     def parse_companies_page(self, response_page: bytes) -> Iterator[Union[CompanyModel, FailedParsingElementModel]]:
         soup = BeautifulSoup(response_page, "html.parser", from_encoding="utf-8")
-
-        if soup.tr is None:
-            logger.warning("Parser received empty page.")
-            raise EmptyPageException()
-
-        for row in soup.find_all("tr"):
+        for row in soup.find_all("tr", class_="trclass"):
             try:
                 yield CompanyModel(
                     isin=self._parse_company_id(row),
@@ -114,22 +109,31 @@ class GPWParser:
                 yield FailedParsingElementModel(raw_data=response_page)
 
     def _parse_company_id(self, company_row: Tag) -> str:
-        anchor = company_row.find("a", href=re.compile("isin="))
-        if not anchor:
+        if self.market == MarketEnum.GPW:
+            isin_tag = company_row.find("td", class_="col3")
+        else:
+            isin_tag = company_row.find("td", class_="col2")
+        if not isin_tag:
             raise CompanyIdNotFoundException(f"Failed to parse company id: {company_row}")
-        return anchor["href"].strip("spolka?isin=")  # type: ignore
+        return isin_tag.get_text(strip=True)
 
     def _parse_company_name(self, company_row: Tag) -> str:
-        name_tag = company_row.find(class_="name")
+        if self.market == MarketEnum.GPW:
+            name_tag = company_row.select(".col2 a")
+        else:
+            name_tag = company_row.select(".col1 a")
         if not name_tag:
             raise CompanyNameNotFoundException(f"Failed to parse company name: {company_row}")
-        return self._get_text_from_soup(name_tag)
+        return name_tag[0].get_text(strip=True)
 
     def _parse_company_ticker(self, company_row: Tag) -> str:
-        ticker_tag = company_row.select(".name > span")
+        if self.market == MarketEnum.GPW:
+            ticker_tag = company_row.find("td", class_="col4")
+        else:
+            ticker_tag = company_row.find("td", class_="col3")
         if not ticker_tag:
             raise CompanySymbolNotFoundException(f"Failed to parse company ticker: {company_row}")
-        return ticker_tag[0].get_text(strip=True).replace("(", "").replace(")", "")
+        return ticker_tag.get_text(strip=True)
 
     def _parse_report_data(self, report_row: Tag) -> _ReportData:
         data_tag = report_row.find(class_="date")

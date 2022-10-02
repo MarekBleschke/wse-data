@@ -12,7 +12,6 @@ from tests.data import gpw_responses
 from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.data_scrappers.gpw.gpw_parser import (
     GPWParser,
-    EmptyPageException,
     CompanyIdNotFoundException,
     CompanyNameNotFoundException,
     CompanySymbolNotFoundException,
@@ -29,94 +28,94 @@ def gpw_parser():
 
 
 @pytest.fixture
+def new_connect_parser():
+    return GPWParser(market=MarketEnum.NEW_CONNECT)
+
+
+@pytest.fixture
 def company_row():
-    return BeautifulSoup(gpw_responses.SINGLE_COMPANY_ROW, "html.parser")
+    return BeautifulSoup(gpw_responses.GPW_SINGLE_COMPANY_ROW, "html.parser")
 
 
-def test_parse_companies_page_parses_page_properly(gpw_parser):
+def test_parse_companies_page_parses_gpw_page_properly(gpw_parser):
     # given
-    parsed_page_generator = gpw_parser.parse_companies_page(gpw_responses.COMPANIES_LIST_PAGE)
+    parsed_page_generator = gpw_parser.parse_companies_page(gpw_responses.GPW_COMPANIES_LIST_PAGE)
 
     # when
     parsed_pages = list(parsed_page_generator)
 
     # then
     assert parsed_pages == [
-        CompanyModel(
-            isin="PLROPCE00017",
-            name="ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA",
-            ticker="RPC",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLZPCOT00018",
-            name="ZAKŁADY PRZEMYSŁU CUKIERNICZEGO OTMUCHÓW SPÓŁKA AKCYJNA",
-            ticker="OTM",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLELZAB00010",
-            name="ZAKŁADY URZĄDZEŃ KOMPUTEROWYCH ELZAB SPÓŁKA AKCYJNA",
-            ticker="ELZ",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLSTPRK00019",
-            name="ZAKŁADY URZĄDZEŃ KOTŁOWYCH STĄPORKÓW SPÓŁKA AKCYJNA",
-            ticker="ZUK",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLZAMET00010",
-            name="ZAMET SPÓŁKA AKCYJNA",
-            ticker="ZMT",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLZEPAK00012",
-            name="ZE PAK SPÓŁKA AKCYJNA",
-            ticker="ZEP",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLKGNRC00015",
-            name="ZESPÓŁ ELEKTROCIEPŁOWNI WROCŁAWSKICH KOGENERACJA SPÓŁKA AKCYJNA",
-            ticker="KGN",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLZPUE000012",
-            name="ZPUE SPÓŁKA AKCYJNA",
-            ticker="PUE",
-            market=MarketEnum.GPW,
-        ),
-        CompanyModel(
-            isin="PLZUE0000015",
-            name="ZUE SPÓŁKA AKCYJNA",
-            ticker="ZUE",
-            market=MarketEnum.GPW,
-        ),
+        CompanyModel(isin="PLNFI0600010", name="06MAGNA", ticker="06N", market=MarketEnum.GPW),
+        CompanyModel(isin="PL11BTS00015", name="11BIT", ticker="11B", market=MarketEnum.GPW),
+        CompanyModel(isin="PLGRNKT00019", name="3RGAMES", ticker="3RG", market=MarketEnum.GPW),
+        CompanyModel(isin="PLAB00000019", name="ABPL", ticker="ABE", market=MarketEnum.GPW),
+        CompanyModel(isin="PLACSA000014", name="ACAUTOGAZ", ticker="ACG", market=MarketEnum.GPW),
+        CompanyModel(isin="PLACTIN00018", name="ACTION", ticker="ACT", market=MarketEnum.GPW),
+        CompanyModel(isin="PLADVIV00015", name="ADIUVO", ticker="ADV", market=MarketEnum.GPW),
+        CompanyModel(isin="PLAGORA00067", name="AGORA", ticker="AGO", market=MarketEnum.GPW),
+        CompanyModel(isin="CY0101062111", name="AGROTON", ticker="AGT", market=MarketEnum.GPW),
+        CompanyModel(isin="PLSNTFG00017", name="AIGAMES", ticker="ALG", market=MarketEnum.GPW),
+        CompanyModel(isin="PLWNDMB00010", name="AILLERON", ticker="ALL", market=MarketEnum.GPW),
+        CompanyModel(isin="PLAIRWY00017", name="AIRWAY", ticker="AWM", market=MarketEnum.GPW),
+        CompanyModel(isin="PLALIOR00045", name="ALIOR", ticker="ALR", market=MarketEnum.GPW),
+        CompanyModel(isin="LU2237380790", name="ALLEGRO", ticker="ALE", market=MarketEnum.GPW),
+        CompanyModel(isin="PLTRNSU00013", name="ALTA", ticker="AAT", market=MarketEnum.GPW),
+        CompanyModel(isin="PLATTFI00018", name="ALTUS", ticker="ALI", market=MarketEnum.GPW),
+        CompanyModel(isin="PLALMTL00023", name="ALUMETAL", ticker="AML", market=MarketEnum.GPW),
+        CompanyModel(isin="PLAMBRA00013", name="AMBRA", ticker="AMB", market=MarketEnum.GPW),
+        CompanyModel(isin="PLAMICA00010", name="AMICA", ticker="AMC", market=MarketEnum.GPW),
+        CompanyModel(isin="PLZYWIC00016", name="ZYWIEC", ticker="ZWC", market=MarketEnum.GPW),
     ]
 
 
-def test_parse_companies_page_raises_on_empty_page(gpw_parser):
+def test_parse_companies_page_parses_new_connect_page_properly(new_connect_parser):
+    # given
+    parsed_page_generator = new_connect_parser.parse_companies_page(gpw_responses.NEW_CONNECT_COMPANIES_LIST_PAGE)
+
+    # when
+    parsed_pages = list(parsed_page_generator)
+
+    # then
+    assert parsed_pages == [
+        CompanyModel(isin="PLVCAOC00015", name="01CYBATON", ticker="01C", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLONESL00011", name="1SOLUTION", ticker="ONE", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PL2CPRT00030", name="2CPARTNER /Z\xa0/1", ticker="2CP", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PL4MASS00011", name="4MASS", ticker="4MS", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLESLTN00010", name="4MOBILITY", ticker="4MB", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLTRCPS00016", name="7FIT", ticker="7FT", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PL7LVLS00017", name="7LEVELS", ticker="7LV", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLMIDVN00017", name="AALLIANCE", ticker="AAS", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLABAK000013", name="ABAK", ticker="ABK", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLABSIN00012", name="ABSINVEST", ticker="AIN", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLACRTS00018", name="ACARTUS", ticker="ACA", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLPIK0000018", name="ADATEX", ticker="ADX", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLADMSC00013", name="ADVERTIGO", ticker="AVE", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="GB00B42V2T10", name="AERFINANC /Z", ticker="AER", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLMNTHL00016", name="AFHOL", ticker="AFH", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="CY0101452114", name="AGROLIGA", ticker="AGL", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLAGRMP00010", name="AGROMEP", ticker="AGP", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLATCDL00013", name="AITON", ticker="AIT", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLAKCFN00013", name="AKCEPTFIN /Z", ticker="AFC", market=MarketEnum.NEW_CONNECT),
+        CompanyModel(isin="PLONLIN00013", name="ANALIZY", ticker="AOL", market=MarketEnum.NEW_CONNECT),
+    ]
+
+
+def test_parse_companies_page_doesnt_yield_for_empty_page(gpw_parser):
     # given
     parsed_page_generator = gpw_parser.parse_companies_page(gpw_responses.COMPANIES_LIST_EMPTY_PAGE)
 
     # then
-    with pytest.raises(EmptyPageException):
+    with pytest.raises(StopIteration):
         next(parsed_page_generator)
 
 
 def test_parse_companies_page_returns_proper_model_on_failed_parsing(gpw_parser):
     # given
-    parsed_page_generator = gpw_parser.parse_companies_page(gpw_responses.COMPANIES_LIST_PAGE)
-
-    class Dummy:
-        pass
+    parsed_page_generator = gpw_parser.parse_companies_page(gpw_responses.GPW_COMPANIES_LIST_PAGE)
 
     # when
-    with patch.object(GPWParser, "_parse_company_id", return_value=Dummy()):
+    with patch.object(GPWParser, "_parse_company_id", return_value=""):
         failed_model = next(parsed_page_generator)
 
     # then
@@ -125,7 +124,7 @@ def test_parse_companies_page_returns_proper_model_on_failed_parsing(gpw_parser)
 
 def test_parse_company_id_properly_parses_data(gpw_parser, company_row):
     # given
-    proper_company_id = "PLROPCE00017"
+    proper_company_id = "PLNFI0600010"
 
     # when
     parsed_id = gpw_parser._parse_company_id(company_row)
@@ -145,7 +144,7 @@ def test_parse_company_id_raises_exception_when_no_company_id(gpw_parser):
 
 def test_parse_company_name_properly_parses_data(gpw_parser, company_row):
     # given
-    proper_company_name = "ZAKŁADY MAGNEZYTOWE ROPCZYCE SPÓŁKA AKCYJNA"
+    proper_company_name = "06MAGNA"
 
     # when
     parsed_name = gpw_parser._parse_company_name(company_row)
@@ -165,7 +164,7 @@ def test_parse_company_name_raises_exception_when_no_company_name(gpw_parser):
 
 def test_parse_company_ticker_properly_parses_data(gpw_parser, company_row):
     # given
-    proper_company_ticker = "RPC"
+    proper_company_ticker = "06N"
 
     # when
     parsed_name = gpw_parser._parse_company_ticker(company_row)
@@ -176,12 +175,9 @@ def test_parse_company_ticker_properly_parses_data(gpw_parser, company_row):
 
 def test_parse_company_ticker_raises_exception_when_no_company_ticker(gpw_parser):
     # given
-    empty_name_data = BeautifulSoup(b"", "html.parser")
-    empty_ticker_data = BeautifulSoup(b"<div class='name'></div>", "html.parser")
+    empty_ticker_data = BeautifulSoup(b"<tr><td></td></tr>", "html.parser")
 
     # then
-    with pytest.raises(CompanySymbolNotFoundException):
-        gpw_parser._parse_company_ticker(empty_name_data)
     with pytest.raises(CompanySymbolNotFoundException):
         gpw_parser._parse_company_ticker(empty_ticker_data)
 

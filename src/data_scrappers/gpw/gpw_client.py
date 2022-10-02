@@ -28,31 +28,12 @@ class GPWClient:
             self.config = NewConnectConfig()
 
     def companies_list(self) -> Iterator[httpx.Response]:
-        limit = 50
-        offset = 0
-        company_entry_str = b"<tr>"  # for checking of empty responses and counting entries for paging
-
-        while True:
-            query_params: dict[str, str | int] = {
-                "offset": offset,
-                "limit": limit,
-            }
-            query_params.update(self.config.companies_query_params)
-            response = httpx.post(self.config.companies_url, data=query_params, timeout=Timeout(timeout=10.0))
-
-            company_entries_count = self._get_entries_count(response.content, company_entry_str)
-
-            # Empty page.
-            if company_entries_count == 0:
-                break
-
-            offset += limit
-
-            yield response
-
-            # Last page.
-            if company_entries_count < limit:
-                break
+        for url, params in self.config.companies_requests:
+            yield httpx.post(
+                url,
+                data=params,
+                timeout=Timeout(timeout=10.0),
+            )
 
     # TODO: a lot of code the same as companies_list. Abstract common code, add retry and other stuff.
     def reports_list(self, search: str = "", for_date: Optional[date] = None) -> Iterator[httpx.Response]:
@@ -69,7 +50,11 @@ class GPWClient:
             if for_date:
                 query_params["date"] = for_date.strftime("%d-%m-%Y")
             query_params.update(self.config.reports_query_params)
-            response = httpx.post(self.config.reports_url, data=query_params, timeout=Timeout(timeout=10.0))
+            response = httpx.post(
+                self.config.reports_url,
+                data=query_params,
+                timeout=Timeout(timeout=10.0),
+            )
 
             report_entries_count = self._get_entries_count(response.content, report_entry_str)
 
