@@ -34,13 +34,13 @@ class WSE:
         self._gpw_parser = GPWParser(market=MarketEnum.GPW)
         self._new_connect_parser = GPWParser(market=MarketEnum.NEW_CONNECT)
 
-    def get_companies(self) -> Iterator[Union[CompanyModel, FailedParsingElementModel]]:
-        for response_page in self._gpw_client.companies_list():
+    def get_companies(self, search: str = "") -> Iterator[Union[CompanyModel, FailedParsingElementModel]]:
+        for response_page in self._gpw_client.companies_list(search=search):
             try:
                 yield from self._gpw_parser.parse_companies_page(response_page.content)
             except EmptyPageException:
                 break
-        for response_page in self._new_connect_client.companies_list():
+        for response_page in self._new_connect_client.companies_list(search=search):
             try:
                 yield from self._new_connect_parser.parse_companies_page(response_page.content)
             except EmptyPageException:

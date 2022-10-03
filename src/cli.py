@@ -29,9 +29,9 @@ def main() -> None:
 
 
 @companies_app.command(name="list")
-def companies_list() -> None:
+def companies_list(search: str = typer.Option("", help="Search phrase.")) -> None:
     wse = WSE()
-    companies = wse.get_companies()
+    companies = wse.get_companies(search=search)
     failed_companies = []
     for company in companies:
         if isinstance(company, FailedParsingElementModel):

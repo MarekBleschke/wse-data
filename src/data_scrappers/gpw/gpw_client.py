@@ -27,8 +27,9 @@ class GPWClient:
         elif market == MarketEnum.NEW_CONNECT:
             self.config = NewConnectConfig()
 
-    def companies_list(self) -> Iterator[httpx.Response]:
+    def companies_list(self, search: str = "") -> Iterator[httpx.Response]:
         for url, params in self.config.companies_requests:
+            params["filters[search]"] = search
             yield httpx.post(
                 url,
                 data=params,

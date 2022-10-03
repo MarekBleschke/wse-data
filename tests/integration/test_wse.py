@@ -81,6 +81,22 @@ def test_get_companies_continues_after_known_parsing_exception(wse, respx_mock):
     assert len(failed_records) == 4
 
 
+def test_get_companies_search_query_param(wse, respx_mock):
+    # given
+    respx_mock.post(wse._gpw_client.config.companies_requests[0][0]).mock(
+        httpx.Response(200, content=GPW_COMPANIES_LIST_PAGE)
+    )
+    respx_mock.post(wse._new_connect_client.config.companies_requests[0][0]).mock(
+        return_value=httpx.Response(200, content=COMPANIES_LIST_EMPTY_PAGE)
+    )
+
+    # when
+    next(wse.get_companies(search="test-search"))
+
+    # then
+    assert b"filters%5Bsearch%5D=test-search" in respx_mock.calls[0].request.content
+
+
 def test_get_reports_returns_proper_number_of_reports(wse, respx_mock):
     # given
     respx_mock.post(wse._gpw_client.config.reports_url).side_effect = [
