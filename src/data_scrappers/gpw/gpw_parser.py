@@ -1,9 +1,11 @@
 import logging
 import re
+from decimal import Decimal
 from typing import Iterator, Union
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
+import xlrd
 from bs4 import BeautifulSoup, NavigableString, Tag
 from pydantic import ValidationError, BaseModel
 
@@ -12,6 +14,7 @@ from src.data_scrappers.gpw.failed_parsing_element_model import (
     FailedParsingElementModel,
 )
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
+from src.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +110,27 @@ class GPWParser:
             except (GPWParserException, ValidationError) as exc:
                 logger.exception(exc)
                 yield FailedParsingElementModel(raw_data=response_page)
+
+    def parse_stock_quotes_xls(self, xls_content: bytes) -> Iterator[StockQuotesModel]:
+        # TODO: handle empty data (closed market day)
+        book = xlrd.open_workbook(file_contents=xls_content)
+        sheet = book.sheet_by_index(0)
+        # TODO: handle error
+        for i in range(1, sheet.nrows):
+            row = sheet.row(i)
+            yield StockQuotesModel(
+                date=datetime.strptime(row[0].value, "%Y-%m-%d"),
+                company_name=row[1].value,
+                company_isin=row[2].value,
+                opening=Decimal(self._parse_xls_float(row[4].value)),
+                closing=Decimal(self._parse_xls_float(row[7].value)),
+                max=Decimal(self._parse_xls_float(row[5].value)),
+                min=Decimal(self._parse_xls_float(row[6].value)),
+                volume=int(row[9].value),
+            )
+
+    def _parse_xls_float(self, cell_value: float) -> str:
+        return str("%0.15g" % cell_value)
 
     def _parse_company_id(self, company_row: Tag) -> str:
         if self.market == MarketEnum.GPW:

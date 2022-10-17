@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from decimal import Decimal
 
 import httpx
 import pytest
@@ -7,6 +8,7 @@ from src.data_scrappers.gpw.failed_parsing_element_model import (
     FailedParsingElementModel,
 )
 from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
+from src.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
 from tests.data.gpw_responses import (
     GPW_COMPANIES_LIST_PAGE,
     COMPANIES_LIST_EMPTY_PAGE,
@@ -16,6 +18,7 @@ from tests.data.gpw_responses import (
     REPORTS_PAGE_MALFORMED,
     NEW_CONNECT_COMPANIES_LIST_PAGE,
     NEW_CONNECT_COMPANIES_LIST_PAGE_MALFORMED,
+    GPW_STOCK_QUOTATIONS_XLS,
 )
 from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
 from src.wse import WSE, DateRangeException
@@ -217,3 +220,39 @@ def test_get_reports_search_query_param(wse, respx_mock):
 
     # then
     assert b"searchText=test-search" in respx_mock.calls[0].request.content
+
+
+def test_get_stock_quotes_returns_proper_number_of_records(wse, respx_mock):
+    # given
+    date_ = date(2022, 10, 4)
+    respx_mock.get("https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=04-10-2022").mock(
+        return_value=httpx.Response(
+            200, content=GPW_STOCK_QUOTATIONS_XLS, headers={"content-type": "application/vnd.ms-excel"}
+        )
+    )
+
+    # when
+    stock_quotes = list(wse.get_stock_quotes(date_))
+
+    # then
+    assert len(stock_quotes) == 418
+    assert stock_quotes[0] == StockQuotesModel(
+        date=date(2022, 10, 4),
+        company_name="06MAGNA",
+        company_isin="PLNFI0600010",
+        opening=Decimal("2.565"),
+        closing=Decimal("2.68"),
+        max=Decimal("2.81"),
+        min=Decimal("2.565"),
+        volume=14099,
+    )
+    assert stock_quotes[417] == StockQuotesModel(
+        date=date(2022, 10, 4),
+        company_name="ZYWIEC",
+        company_isin="PLZYWIC00016",
+        opening=Decimal("478"),
+        closing=Decimal("477"),
+        max=Decimal("479"),
+        min=Decimal("477"),
+        volume=53,
+    )

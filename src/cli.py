@@ -17,6 +17,8 @@ companies_app = typer.Typer()
 app.add_typer(companies_app, name="companies")
 reports_app = typer.Typer()
 app.add_typer(reports_app, name="reports")
+quotes_app = typer.Typer()
+app.add_typer(quotes_app, name="quotes")
 
 
 @app.callback()
@@ -56,6 +58,15 @@ def report_list(
     reports = wse.get_reports(search=search, date_from=date_from, date_to=date_to)
     for report in reports:
         print(report)
+
+
+@quotes_app.command(name="list")
+def quotes(date_: datetime = typer.Option(None, "--date", formats=["%Y-%m-%d"], help="Search from")) -> None:
+    date_ = date_.date()  # type: ignore
+    wse = WSE()
+    # TODO: print info when empty response from client
+    for quote in wse.get_stock_quotes(date_):
+        print(quote)
 
 
 if __name__ == "__main__":

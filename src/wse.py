@@ -1,6 +1,5 @@
 import logging
 from datetime import date
-from itertools import chain
 from typing import Iterator, Optional, Union
 
 from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
@@ -10,6 +9,7 @@ from src.data_scrappers.gpw.failed_parsing_element_model import (
 from src.data_scrappers.gpw.gpw_client import GPWClient
 from src.data_scrappers.gpw.gpw_parser import GPWParser, EmptyPageException
 from src.data_scrappers.gpw.report_model import ReportModel
+from src.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
 from src.data_scrappers.utils import date_range
 
 logger = logging.getLogger(__name__)
@@ -66,12 +66,20 @@ class WSE:
     def _get_reports(
         self, search: str = "", search_date: Optional[date] = None
     ) -> Iterator[Union[ReportModel, FailedParsingElementModel]]:
-        reports_generators = chain(
-            self._gpw_client.reports_list(search=search, for_date=search_date),
-            self._new_connect_client.reports_list(search=search, for_date=search_date),
-        )
-        for response_page in reports_generators:
+        for report_page in self._gpw_client.reports_list(search=search, for_date=search_date):
             try:
-                yield from self._gpw_parser.parse_reports_page(response_page.content)
+                yield from self._gpw_parser.parse_reports_page(report_page.content)
             except EmptyPageException:
                 break
+        for report_page in self._new_connect_client.reports_list(search=search, for_date=search_date):
+            try:
+                yield from self._new_connect_parser.parse_reports_page(report_page.content)
+            except EmptyPageException:
+                break
+
+    def get_stock_quotes(self, date_: date) -> Iterator[StockQuotesModel]:
+        gpw_response = self._gpw_client.stock_quotes(date_)
+        if not gpw_response:
+            return
+        for company_quotes in self._gpw_parser.parse_stock_quotes_xls(gpw_response.content):
+            yield company_quotes
