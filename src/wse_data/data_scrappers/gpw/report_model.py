@@ -29,6 +29,8 @@ class ReportType(Enum):
 
 class ReportModel(BaseModel):
     gpw_id: str
+    company_isin: str
+    # TODO: should be company name or remove it
     name: str
     summary: str
     datetime: datetime

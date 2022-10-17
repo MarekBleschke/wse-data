@@ -5,9 +5,9 @@ from typing import Iterator, Optional, Union
 import httpx
 from httpx import Timeout
 
-from src.data_scrappers.gpw.company_model import MarketEnum
-from src.data_scrappers.gpw.gpw_config import GPWConfig
-from src.data_scrappers.gpw.new_connect_config import NewConnectConfig
+from wse_data.data_scrappers.gpw.company_model import MarketEnum
+from wse_data.data_scrappers.gpw.gpw_config import GPWConfig
+from wse_data.data_scrappers.gpw.new_connect_config import NewConnectConfig
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,19 @@ class GPWClient:
             # Last page.
             if report_entries_count < limit:
                 break
+
+    def stock_quotes(self, date_: date) -> Optional[httpx.Response]:
+        # TODO: integration test for this
+        response = httpx.get(
+            "https://www.gpw.pl/archiwum-notowan",
+            params={"fetch": 1, "type": 10, "date": date_.strftime("%d-%m-%Y")},
+        )
+
+        # NOTE: if no report exist for given day gpw.pl returns html
+        if response.headers["content-type"] != "application/vnd.ms-excel":
+            # TODO: or should it be manually created 404? Do this coherently across clients.
+            return None
+        return response
 
     def _get_entries_count(self, content: bytes, entry_string: bytes) -> int:
         return content.count(entry_string)

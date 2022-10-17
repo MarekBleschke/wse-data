@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class GPWConfig(BaseModel):
+    # https://www.gpw.pl/akcje
     companies_requests: list[tuple[str, dict[str, str]]] = [
         (
             "https://www.gpw.pl/ajaxindex.php",
@@ -57,6 +58,7 @@ class GPWConfig(BaseModel):
             },
         ),
     ]
+    # https://www.gpw.pl/komunikaty
     reports_url: str = "https://www.gpw.pl/ajaxindex.php"
     reports_query_params: dict[str, Union[str, list[str]]] = {
         "action": "GPWEspiReportUnion",

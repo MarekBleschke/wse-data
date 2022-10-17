@@ -4,13 +4,9 @@ from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
-from src.data_scrappers.gpw.failed_parsing_element_model import (
-    FailedParsingElementModel,
-)
-from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
-from tests.data import gpw_responses
-from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
-from src.data_scrappers.gpw.gpw_parser import (
+from wse_data.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
+from wse_data.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
+from wse_data.data_scrappers.gpw.gpw_parser import (
     GPWParser,
     CompanyIdNotFoundException,
     CompanyNameNotFoundException,
@@ -20,6 +16,9 @@ from src.data_scrappers.gpw.gpw_parser import (
     ReportIdNotFoundException,
     ReportSummaryNotFoundException,
 )
+from wse_data.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
+
+from wse_data.tests.data import gpw_responses
 
 
 @pytest.fixture
@@ -263,6 +262,22 @@ def test_parse_report_id_parses_properly(gpw_parser):
     assert output == expected
 
 
+def test_parse_report_company_isin_parses_properly(gpw_parser):
+    # given
+    test_row = BeautifulSoup(
+        '<strong class="name"> <a href="komunikat?geru_id=396206&amp;title=Przekroczenie+progu+5+proc.+w+og%C3%B3lnej+liczbie+akcji+i+g%C5%82os%C3%B3w+w+Sp%C3%B3%C5%82ce"> 11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015) </a> </strong>',  # noqa: E501
+        # noqa
+        "html.parser",
+    )
+    expected = "PL11BTS00015"
+
+    # when
+    output = gpw_parser._parse_report_company_isin(test_row)
+
+    # then
+    assert output == expected
+
+
 def test_parse_report_id_throws_exception_when_not_found(gpw_parser):
     # given
     test_row = BeautifulSoup(
@@ -308,6 +323,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
     assert parsed_pages == [
         ReportModel(
             gpw_id="404679",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Wstępne wyniki finansowe 11 bit studios S.A. za I półrocze 2022 roku",
             datetime=datetime(2022, 9, 23, 17, 1, 26),
@@ -316,6 +332,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="402563",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Zmiana terminu publikacji raportu okresowego",
             datetime=datetime(2022, 8, 18, 16, 35, 2),
@@ -324,6 +341,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="402355",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Powołanie Członków Zarządu Spółki",
             datetime=datetime(2022, 8, 11, 20, 46, 5),
@@ -332,6 +350,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="401797",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Nabycie akcji Starward Industries S.A.",
             datetime=datetime(2022, 7, 29, 17, 13, 31),
@@ -340,6 +359,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="400792",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Zawiadomienie akcjonariusza o zwiększeniu udziału w ogólnej liczbie głosów w Spółce",
             datetime=datetime(2022, 7, 7, 12, 47, 42),
@@ -348,6 +368,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="399347",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Powołanie Zarządu kolejnej kadencji",
             datetime=datetime(2022, 6, 21, 19, 52, 50),
@@ -356,6 +377,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="399346",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Wybór Przewodniczącego i Wiceprzewodniczącego Rady Nadzorczej oraz powołanie Komitetu Audytu",
             datetime=datetime(2022, 6, 21, 19, 48, 48),
@@ -364,6 +386,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="399298",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Wybór Rady Nadzorczej 11 bit studios S.A.",
             datetime=datetime(2022, 6, 21, 13, 46, 48),
@@ -372,6 +395,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="399297",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Wykaz akcjonariuszy posiadających co najmniej 5 proc. głosów na ZWZA Spółki w dniu 21 czerwca 2022 roku.",  # noqa
             datetime=datetime(2022, 6, 21, 13, 37, 44),
@@ -380,6 +404,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="399290",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Treść uchwał powziętych przez Zwyczajne Walne Zgromadzenie 11 bit studios S.A. w dniu 21 czerwca 2022 roku",  # noqa
             datetime=datetime(2022, 6, 21, 13, 24, 34),
@@ -388,6 +413,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="398655",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Zgłoszenie kandydatów na Członków Rady Nadzorczej 11 bit studios S.A.",
             datetime=datetime(2022, 6, 9, 11, 59, 14),
@@ -396,6 +422,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="398491",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Uzupełnienie dokumentacji na Zwyczajne Walne Zgromadzenie 11 bit studios S.A. zwołane na dzień 21 czerwca 2022 roku na godz. 11.00.",  # noqa
             datetime=datetime(2022, 6, 7, 13, 33, 16),
@@ -404,6 +431,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="397285",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="",
             datetime=datetime(2022, 5, 25, 17, 0, 59),
@@ -412,6 +440,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="396844",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Ogłoszenie o zwołaniu Zwyczajnego Walnego Zgromadzenia 11 bit studios S.A. na dzień\n21 czerwca 2022 roku na godz. 11.00.",  # noqa
             datetime=datetime(2022, 5, 19, 15, 5, 24),
@@ -420,6 +449,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="396364",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Wybór audytora do badania i przeglądu sprawozdań finansowych Spółki.",
             datetime=datetime(2022, 5, 12, 11, 2, 45),
@@ -428,6 +458,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="396206",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Przekroczenie progu 5 proc. w ogólnej liczbie akcji i głosów w Spółce",
             datetime=datetime(2022, 5, 10, 15, 31, 18),
@@ -436,6 +467,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="395113",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Rekomendacja Rady Nadzorczej w sprawie podziału zysku netto wypracowanego w 2021 roku",
             datetime=datetime(2022, 4, 27, 11, 43, 7),
@@ -444,6 +476,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="394600",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary='Gra "Moonlighter" w serwisie Netflix',
             datetime=datetime(2022, 4, 20, 16, 1),
@@ -452,6 +485,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="394566",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Zawiadomienie w trybie art. 19 ust. 1 rozporządzenia MAR",
             datetime=datetime(2022, 4, 20, 10, 24, 22),
@@ -460,6 +494,7 @@ def test_parse_reports_page_parses_page_properly(gpw_parser):
         ),
         ReportModel(
             gpw_id="394386",
+            company_isin="PL11BTS00015",
             name="11 BIT STUDIOS SPÓŁKA AKCYJNA (PL11BTS00015)",
             summary="Umowa wydawnicza ze State of Play Games Ltd.",
             datetime=datetime(2022, 4, 14, 17, 0, 12),

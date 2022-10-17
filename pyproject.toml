@@ -5,7 +5,7 @@ description = "WSE data is a library and CLI for fetching Warsaw Stock Exchange 
 authors = ["Marek Bleschke <marek.bleschke@gmail.com>"]
 license = "MIT License"
 readme = "README.md"
-packages = [{include = "src"}]
+packages = [{include = "wse_data", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -13,6 +13,7 @@ typer = {version = "^0.6.1", extras = ["all"]}
 httpx = "^0.23.0"
 pydantic = "^1.10.2"
 beautifulsoup4 = "^4.11.1"
+xlrd = "^2.0.1"
 
 [tool.poetry.group.dev]
 optional = true
@@ -31,7 +32,11 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-wse = "src.cli:app"
+wse = "wse_data.cli:app"
 
 [tool.black]
 line-length = 120
+
+[[tool.mypy.overrides]]
+module = "xlrd.*"
+ignore_missing_imports = true

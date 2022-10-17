@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class NewConnectConfig(BaseModel):
+    # https://newconnect.pl/notowania
     companies_requests: list[tuple[str, dict[str, str]]] = [
         (
             "https://newconnect.pl/ajaxindex.php",
@@ -23,6 +24,7 @@ class NewConnectConfig(BaseModel):
             },
         )
     ]
+    # https://newconnect.pl/spolki-komunikaty-spolek
     reports_url: str = "https://newconnect.pl/ajaxindex.php"
     reports_query_params: dict[str, Union[str, list[str]]] = {
         "action": "GPWEspiReportUnion",

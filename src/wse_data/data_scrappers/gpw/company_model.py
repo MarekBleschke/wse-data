@@ -3,9 +3,9 @@ from enum import Enum, auto
 from pydantic import BaseModel, Field
 
 
-class MarketEnum(Enum):
-    GPW = auto()
-    NEW_CONNECT = auto()
+class MarketEnum(str, Enum):
+    GPW = "GPW"
+    NEW_CONNECT = "NEW-CONNECT"
 
 
 class CompanyModel(BaseModel):
