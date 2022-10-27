@@ -9,12 +9,10 @@ import xlrd
 from bs4 import BeautifulSoup, NavigableString, Tag
 from pydantic import ValidationError, BaseModel
 
-from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
-from src.data_scrappers.gpw.failed_parsing_element_model import (
-    FailedParsingElementModel,
-)
-from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
-from src.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
+from wse_data.data_scrappers.gpw.company_model import MarketEnum, CompanyModel
+from wse_data.data_scrappers.gpw.failed_parsing_element_model import FailedParsingElementModel
+from wse_data.data_scrappers.gpw.report_model import ReportCategory, ReportType, ReportModel
+from wse_data.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +66,9 @@ class _ReportData(BaseModel):
     type: ReportType
 
 
+REPORT_COMPANY_ISIN_RE = re.compile("\(([a-z,A-Z,0-9]*)\)")
+
+
 class GPWParser:
     market: MarketEnum
 
@@ -101,6 +102,7 @@ class GPWParser:
                 report_data = self._parse_report_data(row)
                 yield ReportModel(
                     gpw_id=self._parse_report_id(row),
+                    company_isin=self._parse_report_company_isin(row),
                     name=self._parse_report_name(row),
                     summary=self._parse_report_summary(row),
                     datetime=report_data.datetime,
@@ -195,6 +197,17 @@ class GPWParser:
         if not anchor:
             raise ReportIdNotFoundException(f"Failed to find report id: {report_row}")
         return parse_qs(urlparse(anchor["href"]).query)["geru_id"][0]  # type: ignore
+
+    def _parse_report_company_isin(self, report_row: Tag) -> str:
+        name_tag = report_row.select(".name a")
+        if not name_tag:
+            raise ReportNameNotFoundException(f"Failed to find report company isin: {report_row}")
+        name_str = self._get_text_from_soup(name_tag[0])
+        groups = re.search(REPORT_COMPANY_ISIN_RE, name_str)
+        try:
+            return groups[1]
+        except IndexError:
+            raise ReportNameNotFoundException(f"Failed to match report company isin: {report_row}")
 
     def _parse_report_name(self, report_row: Tag) -> str:
         name_tag = report_row.select(".name a")

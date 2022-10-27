@@ -2,9 +2,10 @@ import httpx
 import pytest
 from httpx._content import encode_urlencoded_data
 
-from src.data_scrappers.gpw.gpw_client import GPWClient
-from src.data_scrappers.gpw.company_model import MarketEnum
-from tests.data import gpw_responses
+from wse_data.data_scrappers.gpw.company_model import MarketEnum
+from wse_data.data_scrappers.gpw.gpw_client import GPWClient
+
+from wse_data.tests.data import gpw_responses
 
 
 @pytest.fixture

@@ -5,9 +5,9 @@ from typing import Iterator, Optional, Union
 import httpx
 from httpx import Timeout
 
-from src.data_scrappers.gpw.company_model import MarketEnum
-from src.data_scrappers.gpw.gpw_config import GPWConfig
-from src.data_scrappers.gpw.new_connect_config import NewConnectConfig
+from wse_data.data_scrappers.gpw.company_model import MarketEnum
+from wse_data.data_scrappers.gpw.gpw_config import GPWConfig
+from wse_data.data_scrappers.gpw.new_connect_config import NewConnectConfig
 
 logger = logging.getLogger(__name__)
 

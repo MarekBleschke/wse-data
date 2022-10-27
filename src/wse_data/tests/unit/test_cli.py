@@ -6,9 +6,10 @@ from unittest.mock import patch
 from datetime import datetime
 from rich import print
 
-from src.cli import app, WSE
-from src.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
-from src.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
+from wse_data.cli import app, WSE
+from wse_data.data_scrappers.gpw.company_model import CompanyModel, MarketEnum
+from wse_data.data_scrappers.gpw.report_model import ReportModel, ReportCategory, ReportType
+
 
 runner = CliRunner()
 
@@ -35,6 +36,7 @@ def test_reports_list_prints_reports():
     get_reports_return_value = [
         ReportModel(
             gpw_id="1",
+            company_isin="PL1",
             name="report 1",
             summary="summary 1",
             datetime=datetime(2022, 2, 23, 11, 12, 43),
@@ -43,6 +45,7 @@ def test_reports_list_prints_reports():
         ),
         ReportModel(
             gpw_id="2",
+            company_isin="PL2",
             name="report 2",
             summary="summary 2",
             datetime=datetime(2021, 5, 12, 12, 32, 1),
