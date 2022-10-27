@@ -11,16 +11,14 @@ from wse_data.data_scrappers.gpw.stock_quotes_model import StockQuotesModel
 
 from wse_data.tests.data.gpw_responses import (
     GPW_COMPANIES_LIST_PAGE,
-    COMPANIES_LIST_EMPTY_PAGE,
     GPW_COMPANIES_LIST_PAGE_MALFORMED,
     REPORTS_PAGE,
     REPORTS_EMPTY_PAGE,
     REPORTS_PAGE_MALFORMED,
     NEW_CONNECT_COMPANIES_LIST_PAGE,
-    NEW_CONNECT_COMPANIES_LIST_PAGE_MALFORMED,
     GPW_STOCK_QUOTATIONS_XLS,
 )
-from wse_data.wse import WSE, DateRangeException
+from wse_data.wse import WSE
 
 
 @pytest.fixture

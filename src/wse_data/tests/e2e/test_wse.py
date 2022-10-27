@@ -85,7 +85,7 @@ def test_get_reports_for_date_range(wse):
         except StopIteration:
             break
         if last.datetime.date() != date_:
-            pytest.fail(f"Report with datetime: '{last.datetime}' has different date than: '{date_t}'")
+            pytest.fail(f"Report with datetime: '{last.datetime}' has different date than: '{date_}'")
             return
 
     # then

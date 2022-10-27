@@ -66,7 +66,7 @@ class _ReportData(BaseModel):
     type: ReportType
 
 
-REPORT_COMPANY_ISIN_RE = re.compile("\(([a-z,A-Z,0-9]*)\)")
+REPORT_COMPANY_ISIN_RE = re.compile(r"\(([a-z,A-Z,0-9]*)\)")
 
 
 class GPWParser:
@@ -205,7 +205,7 @@ class GPWParser:
         name_str = self._get_text_from_soup(name_tag[0])
         groups = re.search(REPORT_COMPANY_ISIN_RE, name_str)
         try:
-            return groups[1]
+            return groups[1]  # type: ignore
         except IndexError:
             raise ReportNameNotFoundException(f"Failed to match report company isin: {report_row}")
 

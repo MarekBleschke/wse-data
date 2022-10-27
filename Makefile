@@ -41,9 +41,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	flake8 src tests
+	flake8 src
 lint/black: ## check style with black
-	black --check src tests
+	black --check src
 lint/mypy: ## check type annotations
 	mypy --strict src
 

@@ -37,6 +37,11 @@ wse = "wse_data.cli:app"
 [tool.black]
 line-length = 120
 
+[tool.mypy]
+exclude = [
+    "src/wse_data/tests"
+]
+
 [[tool.mypy.overrides]]
 module = "xlrd.*"
 ignore_missing_imports = true
