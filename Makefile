@@ -50,13 +50,13 @@ lint/mypy: ## check type annotations
 lint: lint/flake8 lint/black lint/mypy ## check style
 
 test: ## run tests quickly with the default Python
-	pytest --ignore=tests/e2e
+	pytest --ignore=src/wse_data/tests/e2e
 
 test-e2e: ## end to end tests
-	pytest -v tests/e2e
+	pytest -v src/wse_data/tests/e2e
 
 black: ## run black on sourcecode
-	black src tests
+	black src
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source src -m pytest  --ignore=tests/e2e
